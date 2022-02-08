@@ -1,7 +1,8 @@
 # 5. hafta
+4. Hafta başladığım sayfalandırma işleminin url yönlendirme kısmı tamamlandı.
 
 Restful api oluşturun
-- Daha önce oluşturduğunuz apilerden birini kullanın
+- Daha önce oluşturduğunuz apilerden 4. haftada oluşturulan api kullanıldı.
 - tek bir endpoint ten arama, filtreleme ve sıralama işlemlerini yaptırın.
 - apiye ait basit ayarları in memory cache de tutan ve kullanımını sağlayan bir yapı geliştirin
 - endpointlerinizden en az birinde response cache mekanizmasını kullanın
