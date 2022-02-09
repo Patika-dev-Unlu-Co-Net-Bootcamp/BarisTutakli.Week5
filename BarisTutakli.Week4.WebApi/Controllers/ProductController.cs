@@ -5,6 +5,7 @@ using BarisTutakli.Week4.WebApi.Services.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,11 +21,13 @@ namespace BarisTutakli.Week4.WebApi.Controllers
     {
         private readonly IProductService _productService;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IMemoryCache _memoryCache;
 
-        public ProductController(IProductService productService, IHttpContextAccessor contextAccessor)
+        public ProductController(IProductService productService, IHttpContextAccessor contextAccessor, IMemoryCache memoryCache)
         {
             _productService = productService;
             _contextAccessor = contextAccessor;
+            _memoryCache = memoryCache
         }
        
 
@@ -41,12 +44,19 @@ namespace BarisTutakli.Week4.WebApi.Controllers
         }
 
 
-        // Herkes sınırlı sayıda ürüne ulaşabilir
+        // Yetkisi olmayan herkes sınırlı sayıda ürüne ulaşabilir
+        // In cache memory de demo veri tutldu
         [HttpGet("demo")]
         public IActionResult GetLimitedProducts()
         {
+            if (_memoryCache.TryGetValue("Samsung", out Response<List<ProductDetailViewModel>> productList))
+            {
+                return Ok(productList);
+            }
             var restrictedProductDetailViewList = _productService.GetAll().Result;
             restrictedProductDetailViewList.Data = restrictedProductDetailViewList.Data.GetRange(0, 1);
+            _memoryCache.Set("Samsung", restrictedProductDetailViewList.Data);
+
             return Ok(restrictedProductDetailViewList);
         }
 
