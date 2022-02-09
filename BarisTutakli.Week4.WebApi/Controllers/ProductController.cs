@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace BarisTutakli.Week4.WebApi.Controllers
@@ -27,10 +28,9 @@ namespace BarisTutakli.Week4.WebApi.Controllers
         {
             _productService = productService;
             _contextAccessor = contextAccessor;
-            _memoryCache = memoryCache
+            _memoryCache = memoryCache;
         }
        
-
       
 
         // Kullanıcılar ürünlerin listesini görüntüleyebilir
@@ -58,6 +58,21 @@ namespace BarisTutakli.Week4.WebApi.Controllers
             _memoryCache.Set("Samsung", restrictedProductDetailViewList.Data);
 
             return Ok(restrictedProductDetailViewList);
+        }
+        [ResponseCache(Duration =30, NoStore = false, Location = ResponseCacheLocation.Client,VaryByHeader = "unknown user")]
+        [HttpGet("help")]
+        public IActionResult GetHelp()
+        {
+            string message = JsonSerializer.Serialize($"Demo endpoint sınırlı bilgi sunar. Diğer end pointlere erişim için üye olmanız ve yetkinizin olması gerekir." +
+                $"Üye olmak için Authenticates/Register adresini kullanınız.");
+            if (_memoryCache.TryGetValue("Help", out string response))
+            {
+                return Ok(response);
+            }
+     
+            _memoryCache.Set("Help", message);
+
+            return Ok(message);
         }
 
 
