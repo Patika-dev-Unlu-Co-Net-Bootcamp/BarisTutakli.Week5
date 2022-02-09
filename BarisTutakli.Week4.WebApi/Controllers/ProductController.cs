@@ -5,11 +5,13 @@ using BarisTutakli.Week4.WebApi.Services.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -23,12 +25,13 @@ namespace BarisTutakli.Week4.WebApi.Controllers
         private readonly IProductService _productService;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IMemoryCache _memoryCache;
-
-        public ProductController(IProductService productService, IHttpContextAccessor contextAccessor, IMemoryCache memoryCache)
+        private readonly IDistributedCache _distributedCache;
+        public ProductController(IProductService productService, IHttpContextAccessor contextAccessor, IMemoryCache memoryCache, IDistributedCache distributedCache)
         {
             _productService = productService;
             _contextAccessor = contextAccessor;
             _memoryCache = memoryCache;
+            _distributedCache = distributedCache;
         }
        
       
@@ -82,9 +85,24 @@ namespace BarisTutakli.Week4.WebApi.Controllers
             // Base url adresini aldıktan sonra base url adresine göre gerekli sayfalandırma gönlendirmelrini yapıyorum.
             string value = $"{_contextAccessor.HttpContext.Request.Scheme}://{_contextAccessor.HttpContext.Request.Host}" +
                 $"{_contextAccessor.HttpContext.Request.Path}";
+            string productsCacheKey = "products";
             
-               var PagedResponseList = await _productService.GetAll(filter,value);
-            return Ok(PagedResponseList);
+            if (filter.PageSize*10>100)
+            {
+                var cachedItem = await _distributedCache.GetAsync(productsCacheKey);
+                if (cachedItem is not null)
+                {
+                    return Ok(cachedItem);
+                }
+           
+            }
+            
+               var pagedResponseList = await _productService.GetAll(filter,value);
+            var options = new DistributedCacheEntryOptions()
+                .SetAbsoluteExpiration(DateTime.Now.AddHours(5));
+                
+                await _distributedCache.SetAsync(productsCacheKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize( pagedResponseList.Data)), options);
+            return Ok(pagedResponseList);
         }
 
 
