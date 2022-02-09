@@ -96,7 +96,7 @@ namespace BarisTutakli.Week4.WebApi.Business
 
         }
 
-
+        // Filter
         public async Task<PagedResponse<List<Product>>> GetAll(PaginationFilter filter,string root)
         {
            

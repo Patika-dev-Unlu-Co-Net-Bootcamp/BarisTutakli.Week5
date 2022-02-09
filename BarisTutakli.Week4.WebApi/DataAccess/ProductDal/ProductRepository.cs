@@ -41,6 +41,12 @@ namespace BarisTutakli.Week4.WebApi.DataAccess.ProductDal
                 .Take(validFilter.PageSize)
                 .ToListAsync();
             var totalRecords = await _dbSet.CountAsync();
+            
+            // Sort and filter
+            pagedData = FilterProductByDate(filter, pagedData);
+            pagedData = FilterProductsByName(filter, pagedData);
+            pagedData = SortProduct(filter, pagedData);
+
             PagedResponse<List<Product>> pagedResponse = new PagedResponse<List<Product>>(pagedData, validFilter.PageNumber, validFilter.PageSize);
             pagedResponse.Message = "Pagination";
             pagedResponse.FirstPage = UriGenerator( validFilter.PageNumber - 1,validFilter.PageSize,root);
@@ -60,7 +66,32 @@ namespace BarisTutakli.Week4.WebApi.DataAccess.ProductDal
             string uri = $"{root}?PageNumber={pageNumber}&PageSize={pageSize}";
             return new Uri(uri);
         }
-        
+        public List<Product> SortProduct(PaginationFilter filter, List<Product> products)
+        {
+            if (filter.Sort!="asc")
+            {
+                return filter.SortByName is null? products.OrderByDescending(p => p.Id).ToList(): products.OrderByDescending(p => p.ProductName).ToList();
+            }
+
+            return filter.SortByName is null ? products.OrderByDescending(p => p.Id).ToList() :products.OrderByDescending(p => p.ProductName).ToList();
+
+        }
+
+
+        public List<Product> FilterProductByDate(PaginationFilter filter,List<Product> products)
+        {
+
+            return products.Where(p => p.CreatedAt > filter.MinDate && p.CreatedAt < filter.MaxDate).ToList();
+
+        }
+
+        public List<Product> FilterProductsByName(PaginationFilter filter, List<Product> products)
+        {
+            return filter.ProductName is not null ? products.Where(p => p.ProductName.Contains(filter.ProductName)).ToList() : products;
+        }
+
+
+
 
         public async Task<IList<Product>> Get(Expression<Func<Product, bool>> filter)
         {
