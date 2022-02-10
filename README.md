@@ -7,5 +7,5 @@ Restful api oluşturun
 - Demo veri sunan endponte ın memory cache kullanım olanağı sunuldu.
 - help endpoint ine api hakkındaki basit bilgileri in memory cache de tutan ve kullanımını sağlayan bir yapı geliştirişdi.
 - help endpointinde response cache mekanizmasını kullanıldı
-- Disributed cache olarak redis e yazma okuma işlemi endt point e eklendi
-- distributed cache olarak redis e yazan ve okuyan bir cache yönetim servisi yazın. sorgu adedi 100 ve üzeri olursa istenilen zaman aralığında cache yazsın ve okusun
+- Servis oluşturulmadan direk injection yapılarak Disributed cache olarak redis e yazma okuma işlemi endt point e eklendi
+- Bir de Distributed cache olarak redis e yazan ve okuyan bir cache yönetim servisi yazıldı. Sorgu adedi 100 ve üzeri olursa istenilen zaman aralığında cache yazma ve okuma eklendi. Bknz(IDisributedCacheRedisService)
